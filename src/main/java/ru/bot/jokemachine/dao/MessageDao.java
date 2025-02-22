@@ -18,6 +18,9 @@ import static com.example.generated.Tables.*;
 @RequiredArgsConstructor
 public class MessageDao {
 
+	private static final int MAXIMUM = 50;
+	private static final int LIMIT = 20;
+
 	private final DSLContext dsl;
 
 	@Transactional
@@ -25,6 +28,8 @@ public class MessageDao {
 		Person person = parameter.person();
 		Long chatId = parameter.idChat();
 		Long personId = parameter.person().id();
+
+		cleanUp(chatId, personId);
 
 		if (!isPersonInChat(personId)) {
 			createPerson(person);
@@ -48,6 +53,14 @@ public class MessageDao {
 				.onConflict(OLD_FIRES.CHAT_ID, OLD_FIRES.PERSON_ID)
 				.doUpdate()
 				.set(OLD_FIRES.CONTENT, content)
+				.execute();
+	}
+
+	public int count(Long chatId, Long personId) {
+		return dsl.selectCount()
+				.from(MESSAGES)
+				.where(MESSAGES.CHAT_ID.eq(chatId))
+				.and(MESSAGES.PERSON_ID.eq(personId))
 				.execute();
 	}
 
@@ -123,4 +136,22 @@ public class MessageDao {
 
 		return Optional.ofNullable(fetch.get(0).get(OLD_FIRES.CONTENT));
 	}
+
+	private void cleanUp(Long chatId, Long personId) {
+		if (count(chatId, personId) > MAXIMUM) {
+			dsl.deleteFrom(MESSAGES)
+					.where(MESSAGES.CHAT_ID.eq(chatId))
+					.and(MESSAGES.PERSON_ID.eq(personId))
+					.and(MESSAGES.ID.in(
+							dsl.select(MESSAGES.ID)
+									.from(MESSAGES)
+									.where(MESSAGES.CHAT_ID.eq(chatId))
+									.and(MESSAGES.PERSON_ID.eq(personId))
+									.orderBy(MESSAGES.CREATED_AT.asc())
+									.limit(LIMIT)
+					))
+					.execute();
+		}
+	}
+
 }
