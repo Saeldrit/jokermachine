@@ -53,7 +53,6 @@ public class MediumRareBotService extends TelegramLongPollingBot {
 				}
 
 				String content = commandHandler.doCommand(message);
-				System.out.println(content);
 				send(message, content);
 			});
 		}
