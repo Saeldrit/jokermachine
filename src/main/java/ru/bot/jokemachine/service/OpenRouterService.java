@@ -16,13 +16,7 @@ public class OpenRouterService {
 	private final OpenRouterProperties openRouterProperties;
 
 	private static final String PROMT = """
-			Проанализируй историю сообщений пользователя из телеграмм.
-			Напиши небольшую стендап прожарку (в среднем 3 предложения) используя сарказм и юмор.
-			Используй его имя и пол, создай впечатление что вы друзья.
-			Подчеркни слабости и нелепые ситуации.
-			Используй мат в прожарке.
-			Набор сообщений пользователя:
-			'%s'
+			
 			""";
 
 	public String getAiResponse(String userName, StringBuilder messages) {
