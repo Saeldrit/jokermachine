@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: jokemachine
+  datasource:
+    password: ${DB_PASSWORD}
+    username: ${DB_USERNAME}
+    url: ${DB_URL}
+    driver-class-name: ${DB_DRIVER}
+
+telegram:
+  bot:
+    name: ${BOT_NAME}
+    token: ${BOT_TOKEN}
+
+openrouter:
+  api:
+    key: ${API_KEY}
+    url: ${API_URL}
