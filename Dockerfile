@@ -1,11 +1,18 @@
-FROM ubuntu:latest AS build
-RUN apt-get update
-RUN apt-get install openjdk-17-jdk -y
-COPY . .
-RUN ./mvn clean compile package
+FROM maven:3.8.6-openjdk-17 AS build
+
+WORKDIR /app
+
+COPY src /app/src
+COPY pom.xml /app/pom.xml
+
+RUN mvn clean compile package
 
 FROM openjdk:17-jdk-slim
+
+WORKDIR /app
+
+COPY --from=build /app/target/jokermachine.jar app.jar
+
 EXPOSE 8080
-COPY --from=build /target/target/*.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
