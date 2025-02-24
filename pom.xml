@@ -95,13 +95,13 @@
                 <configuration>
                     <jdbc>
                         <!--suppress UnresolvedMavenProperty -->
-                        <driver>${db.driver}</driver>
+                        <driver>${db_driver}</driver>
                         <!--suppress UnresolvedMavenProperty -->
-                        <url>${db.url}</url>
+                        <url>${db_url}</url>
                         <!--suppress UnresolvedMavenProperty -->
-                        <user>${db.user}</user>
+                        <user>${db_user}</user>
                         <!--suppress UnresolvedMavenProperty -->
-                        <password>${db.password}</password>
+                        <password>${db_password}</password>
                     </jdbc>
                     <generator>
                         <database>

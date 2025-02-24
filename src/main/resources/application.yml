@@ -2,17 +2,17 @@ spring:
   application:
     name: jokemachine
   datasource:
-    password: ${DB_PASSWORD}
-    username: ${DB_USERNAME}
-    url: ${DB_URL}
-    driver-class-name: ${DB_DRIVER}
+    password: ${db_password}
+    username: ${db_username}
+    url: ${db_url}
+    driver-class-name: ${db_driver}
 
 telegram:
   bot:
-    name: ${BOT_NAME}
-    token: ${BOT_TOKEN}
+    name: ${bot_name}
+    token: ${bot_token}
 
 openrouter:
   api:
-    key: ${API_KEY}
-    url: ${API_URL}
+    key: ${api_key}
+    url: ${api_url}
