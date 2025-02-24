@@ -56,12 +56,11 @@ public class MessageDao {
 				.execute();
 	}
 
-	public int count(Long chatId, Long personId) {
-		return dsl.selectCount()
-				.from(MESSAGES)
-				.where(MESSAGES.CHAT_ID.eq(chatId))
-				.and(MESSAGES.PERSON_ID.eq(personId))
-				.execute();
+	public Integer count(Long chatId, Long personId) {
+		String sql = "SELECT COUNT(*) FROM chat.messages WHERE person_id = ? AND chat_id = ?";
+
+		return dsl.resultQuery(sql, personId, chatId)
+				.fetchInto(Integer.class).get(0);
 	}
 
 	public boolean isChat(Long chatId) {
