@@ -3,7 +3,7 @@ spring:
     name: jokemachine
   datasource:
     password: ${db_password}
-    username: ${db_username}
+    username: ${db_user}
     url: ${db_url}
     driver-class-name: ${db_driver}
 

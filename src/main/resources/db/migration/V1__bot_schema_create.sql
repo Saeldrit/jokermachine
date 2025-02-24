@@ -42,6 +42,6 @@ CREATE TABLE IF NOT EXISTS chat.old_fires
     FOREIGN KEY (person_id) REFERENCES chat.persons (id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_chat_users_chat ON chat.chat_users (chat_id);
-CREATE INDEX idx_messages_chat ON chat.messages (chat_id);
-CREATE INDEX idx_messages_user ON chat.messages (person_id);
+CREATE INDEX IF NOT EXISTS idx_chat_users_chat ON chat.chat_users (chat_id);
+CREATE INDEX IF NOT EXISTS idx_messages_chat ON chat.messages (chat_id);
+CREATE INDEX IF NOT EXISTS idx_messages_user ON chat.messages (person_id);
