@@ -8,12 +8,8 @@ ARG db_username
 ARG db_password
 ARG db_driver
 
-ENV db_url=${db_url}
-ENV db_username=${db_username}
-ENV db_password=${db_password}
-ENV dv_driver=${dv_driver}
+RUN mvn clean compile package -Ddb.url=${db_url} -Ddb.user=${db_username} -Ddb.password=${db_password} -Ddb.driver=${db_driver}
 
-RUN mvn clean compile package
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
