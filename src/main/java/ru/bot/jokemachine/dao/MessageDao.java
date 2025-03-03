@@ -1,15 +1,18 @@
 package ru.bot.jokemachine.dao;
 
 import com.example.generated.tables.records.MessagesRecord;
+import com.example.generated.tables.records.PersonsRecord;
 import lombok.RequiredArgsConstructor;
-import org.jooq.DSLContext;
-import org.jooq.Record1;
-import org.jooq.Result;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jooq.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.bot.jokemachine.model.Parameter;
 import ru.bot.jokemachine.model.Person;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.example.generated.Tables.*;
@@ -18,8 +21,8 @@ import static com.example.generated.Tables.*;
 @RequiredArgsConstructor
 public class MessageDao {
 
-	private static final int MAXIMUM = 50;
 	private static final int LIMIT = 20;
+	private static final int MAXIMUM = 50;
 
 	private final DSLContext dsl;
 
@@ -27,7 +30,7 @@ public class MessageDao {
 	public void save(Parameter parameter) {
 		Person person = parameter.person();
 		Long chatId = parameter.idChat();
-		Long personId = parameter.person().id();
+		Long personId = person.id();
 
 		cleanUp(chatId, personId);
 
@@ -122,6 +125,34 @@ public class MessageDao {
 				.execute();
 	}
 
+	public Pair<String, List<String>> getMessagesPair(String nickname, Long chatId) {
+		Map<String, List<String>> result = getMessagesByNickname(nickname, chatId);
+
+		return result.isEmpty()
+				? Pair.of(null, Collections.emptyList())
+				: Pair.of(
+				result.keySet().iterator().next(),
+				result.values().iterator().next()
+		);
+	}
+
+	public Map<String, List<String>> getMessagesByNickname(String nickname, Long chatId) {
+		Table<Record2<Long, String>> per = dsl.select(PERSONS.ID, PERSONS.FIRST_NAME)
+				.from(PERSONS)
+				.where(PERSONS.LOGIN.eq(nickname))
+				.asTable("per");
+
+		Field<Long> perId = per.field(PERSONS.ID.getName(), Long.class);
+		Field<String> perFirstName = per.field(PERSONS.FIRST_NAME.getName(), String.class);
+
+		return dsl.select(perFirstName, MESSAGES.MESSAGE_TEXT)
+				.from(per)
+				.join(MESSAGES)
+				.on(MESSAGES.PERSON_ID.eq(perId)
+						.and(MESSAGES.CHAT_ID.eq(chatId)))
+				.fetchGroups(perFirstName, MESSAGES.MESSAGE_TEXT);
+	}
+
 	public Optional<String> getOldContent(Long chatId, Long personId) {
 		Result<Record1<String>> fetch = dsl.select(OLD_FIRES.CONTENT)
 				.from(OLD_FIRES)
@@ -152,5 +183,4 @@ public class MessageDao {
 					.execute();
 		}
 	}
-
 }

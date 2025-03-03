@@ -22,7 +22,24 @@ public class CommandFabric {
 				));
 	}
 
-	public CommandHandler doCommand(String command) {
+	public CommandHandler getCommand(String command) {
+		return getWithNickName(command);
+	}
+
+	private CommandHandler getWithNickName(String message) {
+		String[] split = message.split(" ");
+		String command = split[0];
+
+		if (split.length > 1) {
+			String nickName = split[1];
+
+			final String nickNameStartSymbol = "@";
+
+			if (nickName.startsWith(nickNameStartSymbol)) {
+				return commands.get(command + " " + nickNameStartSymbol);
+			}
+		}
+
 		return commands.get(command);
 	}
 }
