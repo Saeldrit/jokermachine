@@ -15,7 +15,7 @@ public class OpenRouterService {
 	private final RestClient restClient;
 	private final OpenRouterProperties openRouterProperties;
 
-	private static final String PROMT = """
+	private static final String PROMT_SOMESELF = """
 			Проанализируй историю сообщений пользователя из телеграмм.
 			Напиши небольшую стендап прожарку (в среднем 3 предложения) используя сарказм и юмор.
 			Используй его имя '%s' и пол, создай впечатление что вы друзья.
@@ -24,6 +24,31 @@ public class OpenRouterService {
 			Набор сообщений пользователя:
 			'%s'
 			""";
+
+	private static final String PROMT_ANOTHER_USER = """
+			Проанализируй историю сообщений пользователя из телеграмм.
+			Напиши небольшую стендап прожарку (в среднем 3 предложения) используя сарказм и юмор.
+			Учти, что эту прожарку заказл другой пользователь '%s'.
+			Используй имя пользователя, которого нужно прожарить '%s' и пол, создай впечатление что вы друзья.
+			Подчеркни слабости и нелепые ситуации.
+			Используй мат в прожарке.
+			Набор сообщений пользователя:
+			'%s'
+			""";
+
+	public String getAiResponse(String nameAnotherUser, String orderUserName, StringBuilder messages) {
+		return restClient.post()
+				.uri(openRouterProperties.api().url())
+				.body(createRequest(nameAnotherUser, orderUserName, messages))
+				.header("Authorization", "Bearer " + openRouterProperties.api().key())
+				.header("Content-Type", "application/json")
+				.retrieve()
+				.onStatus(status -> !status.is2xxSuccessful(), (req, res) -> {
+					throw new RuntimeException("Ошибка: " + res.getStatusCode());
+				})
+				.body(Response.class)
+				.getChoices().get(0).getMessage().getContent();
+	}
 
 	public String getAiResponse(String userName, StringBuilder messages) {
 		return restClient.post()
@@ -42,7 +67,20 @@ public class OpenRouterService {
 	private static Request createRequest(String userName, StringBuilder messages) {
 		Request.Message message = new Request.Message();
 		message.setRole("user");
-		message.setContent(PROMT.formatted(userName, messages));
+		message.setContent(PROMT_SOMESELF.formatted(userName, messages));
+
+		Request request = new Request();
+		request.setModel("deepseek/deepseek-chat:free");
+		request.setMessages(List.of(message));
+		request.setTemperature(0.7);
+
+		return request;
+	}
+
+	private static Request createRequest(String nameAnotherUser, String orderUserName, StringBuilder messages) {
+		Request.Message message = new Request.Message();
+		message.setRole("user");
+		message.setContent(PROMT_ANOTHER_USER.formatted(nameAnotherUser, orderUserName, messages));
 
 		Request request = new Request();
 		request.setModel("deepseek/deepseek-chat:free");

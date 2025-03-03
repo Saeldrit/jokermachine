@@ -27,7 +27,7 @@ public class MessageService {
 		String userName = user.getUserName();
 		String firstName = user.getFirstName();
 
-		String text = message.getText();
+		String text = message.getText() + ". ";
 
 		Person person = Person.builder()
 				.id(id)

@@ -12,26 +12,33 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.bot.jokemachine.config.properties.TelegramProperties;
 import ru.bot.jokemachine.fabric.CommandFabric;
 
-import java.util.concurrent.CompletableFuture;
+import java.time.Instant;
 
 import static java.util.Objects.isNull;
 
 @Slf4j
 @Service
-public class MediumRareBotService extends TelegramLongPollingBot {
+public class JokerMachineStartService extends TelegramLongPollingBot {
+
+	/*
+	* command == 4, whitespace == 1, @ == 1, telegram nickname =< 32
+	* */
+	private static final int COMMAND_LIMIT = 38;
 
 	private final String botName;
+	private final Instant botStartTime;
 	private final CommandFabric commandFabric;
 	private final MessageService messageService;
 
 	@Autowired
-	public MediumRareBotService(TelegramProperties telegramProperties
-								, CommandFabric commandFabric
-								, MessageService messageService) {
+	public JokerMachineStartService(TelegramProperties telegramProperties,
+									CommandFabric commandFabric,
+									MessageService messageService) {
 		super(telegramProperties.bot().token());
 		this.botName = telegramProperties.bot().name();
 		this.commandFabric = commandFabric;
 		this.messageService = messageService;
+		this.botStartTime = Instant.now();
 	}
 
 	@Override
@@ -42,11 +49,16 @@ public class MediumRareBotService extends TelegramLongPollingBot {
 	@Override
 	public void onUpdateReceived(Update update) {
 		if (update.hasMessage() && update.getMessage().hasText()) {
-			CompletableFuture.runAsync(() -> {
-				Message message = update.getMessage();
-				String command = message.getText();
+			Message message = update.getMessage();
 
-				CommandHandler commandHandler = commandFabric.doCommand(command);
+			if (isMessageAfterRun(message)) {
+				String command = message.getText();
+				CommandHandler commandHandler = null;
+
+				if (command.length() < COMMAND_LIMIT && command.startsWith("/")) {
+					commandHandler = commandFabric.getCommand(command);
+				}
+
 				if (isNull(commandHandler)) {
 					messageService.saveMessage(message);
 					return;
@@ -54,23 +66,26 @@ public class MediumRareBotService extends TelegramLongPollingBot {
 
 				String content = commandHandler.doCommand(message);
 				send(message, content);
-			});
+			}
 		}
 	}
 
 	public void send(Message message, String content) {
 		if (StringUtils.isEmpty(content)) {
-			content = "Кажется ты не достоин моего ответа";
+			content = "Кажется, ты не достоин моего ответа";
 		}
-
 		SendMessage sendMessage = new SendMessage();
 		sendMessage.setChatId(message.getChatId().toString());
 		sendMessage.setText(content);
-
 		try {
 			execute(sendMessage);
 		} catch (TelegramApiException e) {
 			log.error("Error while sending message", e);
 		}
+	}
+
+	private boolean isMessageAfterRun(Message message) {
+		long messageTimeMillis = message.getDate() * 1000L;
+		return !(messageTimeMillis < botStartTime.toEpochMilli());
 	}
 }
