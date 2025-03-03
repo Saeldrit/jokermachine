@@ -80,7 +80,7 @@ public class OpenRouterService {
 	private static Request createRequest(String nameAnotherUser, String orderUserName, StringBuilder messages) {
 		Request.Message message = new Request.Message();
 		message.setRole("user");
-		message.setContent(PROMT_ANOTHER_USER.formatted(nameAnotherUser, orderUserName, messages));
+		message.setContent(PROMT_ANOTHER_USER.formatted(orderUserName, nameAnotherUser, messages));
 
 		Request request = new Request();
 		request.setModel("deepseek/deepseek-chat:free");
