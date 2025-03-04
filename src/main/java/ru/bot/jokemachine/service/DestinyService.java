@@ -1,4 +1,4 @@
-package ru.bot.jokemachine.service.ai;
+package ru.bot.jokemachine.service;
 
 import com.example.generated.tables.records.MessagesRecord;
 import lombok.RequiredArgsConstructor;
@@ -8,14 +8,13 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import ru.bot.jokemachine.dao.MessageDao;
 import ru.bot.jokemachine.model.ChatMessage;
-import ru.bot.jokemachine.service.OpenRouterService;
 import ru.bot.jokemachine.util.Cleaner;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AiService {
+public class DestinyService {
 
 	private final MessageDao messageDao;
 	private final OpenRouterService openRouterService;
@@ -32,7 +31,7 @@ public class AiService {
 		StringBuilder stringBuilder = new StringBuilder();
 		chatMessages.forEach(m -> stringBuilder.append(m.getMessageText()));
 
-		String aiResponse = openRouterService.getAiResponse(firstName, stringBuilder);
+		String aiResponse = openRouterService.getDestinyMyself(firstName, stringBuilder);
 
 		return Cleaner.cleanUp(aiResponse);
 	}

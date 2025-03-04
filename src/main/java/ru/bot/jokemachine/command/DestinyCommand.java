@@ -4,21 +4,21 @@ import lombok.RequiredArgsConstructor;
 import org.jvnet.hk2.annotations.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.bot.jokemachine.service.CommandHandler;
-import ru.bot.jokemachine.service.FryService;
+import ru.bot.jokemachine.service.DestinyService;
 
 @Service
 @RequiredArgsConstructor
-public class FryCommand implements CommandHandler {
+public class DestinyCommand implements CommandHandler {
 
-	private final FryService fryService;
+	private final DestinyService destinyService;
 
 	@Override
 	public String command() {
-		return "/fry";
+		return "/destiny";
 	}
 
 	@Override
 	public String doCommand(Message message) {
-		return fryService.getOpinion(message);
+		return destinyService.getOpinion(message);
 	}
 }

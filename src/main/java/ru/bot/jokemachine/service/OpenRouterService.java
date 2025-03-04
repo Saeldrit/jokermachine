@@ -15,31 +15,25 @@ public class OpenRouterService {
 	private final RestClient restClient;
 	private final OpenRouterProperties openRouterProperties;
 
-	private static final String PROMT_SOMESELF = """
-			Проанализируй историю сообщений пользователя из телеграмм.
-			Напиши небольшую стендап прожарку (в среднем 3 предложения) используя сарказм и юмор.
-			Используй его имя '%s' и пол, создай впечатление что вы друзья.
-			Подчеркни слабости и нелепые ситуации.
-			Используй мат в прожарке.
-			Набор сообщений пользователя:
-			'%s'
-			""";
+	public String getFryAnotherPerson(String nameAnotherUser, String orderUserName, StringBuilder messages) {
+		String content = Promt.FRY_ANOTHER_USER.formatted(orderUserName, nameAnotherUser, messages);
+		return getResponse(createRequest(content));
+	}
 
-	private static final String PROMT_ANOTHER_USER = """
-			Проанализируй историю сообщений пользователя из телеграмм.
-			Напиши небольшую стендап прожарку (в среднем 3 предложения) используя сарказм и юмор.
-			Учти, что эту прожарку заказл другой пользователь '%s'.
-			Используй имя пользователя, которого нужно прожарить '%s' и пол, создай впечатление что вы друзья.
-			Подчеркни слабости и нелепые ситуации.
-			Используй мат в прожарке.
-			Набор сообщений пользователя:
-			'%s'
-			""";
+	public String getFryMyself(String userName, StringBuilder messages) {
+		String content = Promt.FRY_MYSELF.formatted(userName, messages);
+		return getResponse(createRequest(content));
+	}
 
-	public String getAiResponse(String nameAnotherUser, String orderUserName, StringBuilder messages) {
+	public String getDestinyMyself(String userName, StringBuilder messages) {
+		String content = Promt.DESTINY_MYSELF.formatted(userName, messages);
+		return getResponse(createRequest(content));
+	}
+
+	private String getResponse(Request request) {
 		return restClient.post()
 				.uri(openRouterProperties.api().url())
-				.body(createRequest(nameAnotherUser, orderUserName, messages))
+				.body(request)
 				.header("Authorization", "Bearer " + openRouterProperties.api().key())
 				.header("Content-Type", "application/json")
 				.retrieve()
@@ -50,37 +44,10 @@ public class OpenRouterService {
 				.getChoices().get(0).getMessage().getContent();
 	}
 
-	public String getAiResponse(String userName, StringBuilder messages) {
-		return restClient.post()
-				.uri(openRouterProperties.api().url())
-				.body(createRequest(userName, messages))
-				.header("Authorization", "Bearer " + openRouterProperties.api().key())
-				.header("Content-Type", "application/json")
-				.retrieve()
-				.onStatus(status -> !status.is2xxSuccessful(), (req, res) -> {
-					throw new RuntimeException("Ошибка: " + res.getStatusCode());
-				})
-				.body(Response.class)
-				.getChoices().get(0).getMessage().getContent();
-	}
-
-	private static Request createRequest(String userName, StringBuilder messages) {
+	private static Request createRequest(String content) {
 		Request.Message message = new Request.Message();
 		message.setRole("user");
-		message.setContent(PROMT_SOMESELF.formatted(userName, messages));
-
-		Request request = new Request();
-		request.setModel("deepseek/deepseek-chat:free");
-		request.setMessages(List.of(message));
-		request.setTemperature(0.7);
-
-		return request;
-	}
-
-	private static Request createRequest(String nameAnotherUser, String orderUserName, StringBuilder messages) {
-		Request.Message message = new Request.Message();
-		message.setRole("user");
-		message.setContent(PROMT_ANOTHER_USER.formatted(orderUserName, nameAnotherUser, messages));
+		message.setContent(content);
 
 		Request request = new Request();
 		request.setModel("deepseek/deepseek-chat:free");
@@ -117,5 +84,38 @@ public class OpenRouterService {
 				private String content;
 			}
 		}
+	}
+
+	private static class Promt {
+
+		private static final String FRY_MYSELF = """
+				Проанализируй историю сообщений пользователя из телеграмм.
+				Напиши небольшую стендап прожарку (в среднем 3 предложения) используя сарказм и юмор.
+				Используй его имя '%s' и пол, создай впечатление что вы друзья.
+				Подчеркни слабости и нелепые ситуации.
+				Используй мат в прожарке.
+				Набор сообщений пользователя:
+				'%s'
+				""";
+
+		private static final String FRY_ANOTHER_USER = """
+				Проанализируй историю сообщений пользователя из телеграмм.
+				Напиши небольшую стендап прожарку (в среднем 3 предложения) используя сарказм и юмор.
+				Учти, что эту прожарку заказл другой пользователь '%s'.
+				Используй имя пользователя, которого нужно прожарить '%s' и пол.
+				Подчеркни слабости и нелепые ситуации.
+				Используй мат в прожарке.
+				Создай впечатление что вы друзья.
+				Набор сообщений пользователя:
+				'%s'
+				""";
+		private static final String DESTINY_MYSELF = """
+				Ты ведьма и ясновидящая с огромным опытом. Ты знаешь все о человеческой судьбе.
+				На основе имени пользователя '%s' и его манере общения сделай гороскоп (в среднем 3 предложения).
+				Предскажи его судьбу на сегодняшний день и ближайшее будущее.
+				Обязательно используй подходящий для пользователя знак зодиака.
+				Набор сообщений пользователя:
+				'%s'
+				""";
 	}
 }
