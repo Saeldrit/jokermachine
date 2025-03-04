@@ -32,7 +32,7 @@ public class FryAnotherPersonService {
 			StringBuilder stringBuilder = new StringBuilder();
 			messages.forEach(stringBuilder::append);
 
-			String aiResponse = openRouterService.getAiResponse(nameAnotherUser, firstName, stringBuilder);
+			String aiResponse = openRouterService.getFryAnotherPerson(nameAnotherUser, firstName, stringBuilder);
 
 			return Cleaner.cleanUp(aiResponse);
 		}
