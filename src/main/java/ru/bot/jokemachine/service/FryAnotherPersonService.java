@@ -24,20 +24,24 @@ public class FryAnotherPersonService {
 
 		String nickName = getWithNickName(text);
 
-		if (StringUtils.isNotEmpty(nickName)) {
-			Pair<String, List<String>> messagesPair = messageDao.getMessagesPair(nickName, chatId);
-			String nameAnotherUser = messagesPair.getKey();
-			List<String> messages = messagesPair.getValue();
-
-			StringBuilder stringBuilder = new StringBuilder();
-			messages.forEach(stringBuilder::append);
-
-			String aiResponse = openRouterService.getFryAnotherPerson(nameAnotherUser, firstName, stringBuilder);
-
-			return Cleaner.cleanUp(aiResponse);
+		if (StringUtils.isEmpty(nickName)) {
+			return null;
 		}
 
-		return "";
+		Pair<String, List<String>> messagesPair = messageDao.getMessagesPair(nickName, chatId);
+		String nameAnotherUser = messagesPair.getKey();
+		List<String> messages = messagesPair.getValue();
+
+		StringBuilder stringBuilder = new StringBuilder();
+		messages.forEach(stringBuilder::append);
+
+		if (StringUtils.isEmpty(nameAnotherUser)) {
+			return "К сожалению, жарить нечего";
+		}
+
+		String aiResponse = openRouterService.getFryAnotherPerson(nameAnotherUser, firstName, stringBuilder);
+
+		return Cleaner.cleanUp(aiResponse);
 	}
 
 	private String getWithNickName(String message) {
