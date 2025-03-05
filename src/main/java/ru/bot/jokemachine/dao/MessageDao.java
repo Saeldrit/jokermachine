@@ -1,7 +1,6 @@
 package ru.bot.jokemachine.dao;
 
 import com.example.generated.tables.records.MessagesRecord;
-import com.example.generated.tables.records.PersonsRecord;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jooq.*;
@@ -21,8 +20,8 @@ import static com.example.generated.Tables.*;
 @RequiredArgsConstructor
 public class MessageDao {
 
-	private static final int LIMIT = 20;
-	private static final int MAXIMUM = 50;
+	private static final int LIMIT = 3;
+	private static final int MAXIMUM = 10;
 
 	private final DSLContext dsl;
 
@@ -170,9 +169,7 @@ public class MessageDao {
 	private void cleanUp(Long chatId, Long personId) {
 		if (count(chatId, personId) > MAXIMUM) {
 			dsl.deleteFrom(MESSAGES)
-					.where(MESSAGES.CHAT_ID.eq(chatId))
-					.and(MESSAGES.PERSON_ID.eq(personId))
-					.and(MESSAGES.ID.in(
+					.where(MESSAGES.ID.in(
 							dsl.select(MESSAGES.ID)
 									.from(MESSAGES)
 									.where(MESSAGES.CHAT_ID.eq(chatId))
